@@ -7,6 +7,7 @@ export type ColoringPage = {
   image_url: string;
 };
 
+// ב-RTL, index 0 מוצג בפינה הימנית → אדום בימין, לבן בשמאל
 const PALETTE = [
   "#ef4444", "#f87171", "#ec4899", "#f9a8d4",
   "#f97316", "#fb923c", "#facc15", "#fde68a",
@@ -24,58 +25,166 @@ const MAX_HISTORY = 25;
 const CSS = `
   * { box-sizing: border-box; }
   body { margin: 0; overflow-x: hidden; }
-  .reuti-app { min-height: 100vh; background: linear-gradient(160deg,#fdf4ff 0%,#f0f4ff 55%,#fff8f0 100%); font-family:'Fredoka','Heebo','Arial',sans-serif; direction:rtl; }
-  .reuti-header { background:linear-gradient(135deg,#6d28d9 0%,#a855f7 55%,#ec4899 100%); padding:18px 20px 44px; text-align:center; position:relative; overflow:hidden; }
-  .reuti-header h1 { margin:0; color:#fff; font-size:clamp(20px,5vw,32px); font-weight:700; text-shadow:0 2px 12px rgba(0,0,0,.25); }
-  .reuti-header p  { margin:6px 0 0; color:rgba(255,255,255,.8); font-size:clamp(13px,3vw,15px); }
-  .reuti-body { max-width:900px; margin:0 auto; padding:14px 12px 40px; }
-  .reuti-card { background:#fff; border-radius:20px; padding:14px 16px; box-shadow:0 4px 24px rgba(124,58,237,.09); margin-bottom:14px; }
-  .reuti-card h2 { margin:0 0 12px; font-size:14px; color:#7c3aed; font-weight:700; }
 
-  /* page strip */
-  .page-strip { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:thin; scrollbar-color:#e9d5ff transparent; }
-  .page-btn { flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:5px; border:3px solid #f3f4f6; border-radius:16px; padding:7px 5px; background:#fafafa; cursor:pointer; scroll-snap-align:start; transition:all .18s; }
-  .page-btn.active { border-color:#7c3aed; background:#f5f3ff; box-shadow:0 4px 16px rgba(124,58,237,.28); transform:scale(1.05); }
-  .page-btn img { height:64px; width:64px; object-fit:contain; border-radius:10px; display:block; }
-  .page-btn span { font-size:10px; font-weight:600; color:#6b7280; max-width:64px; text-align:center; line-height:1.25; font-family:'Fredoka','Heebo',sans-serif; }
-  .page-btn.active span { color:#7c3aed; }
+  .reuti-app {
+    min-height: 100vh;
+    background: linear-gradient(160deg, #fdf4ff 0%, #f0f4ff 55%, #fff8f0 100%);
+    font-family: 'Fredoka', 'Heebo', 'Arial Rounded MT Bold', Arial, sans-serif;
+    direction: rtl;
+  }
 
-  /* color palette */
-  .palette { display:flex; flex-wrap:wrap; gap:8px; }
-  .color-btn { width:40px; height:40px; border-radius:50%; border:3px solid #fff; cursor:pointer; transition:all .14s; box-shadow:0 2px 6px rgba(0,0,0,.18); }
-  .color-btn.white { border:2px solid #d1d5db; }
-  .color-btn.active { transform:scale(1.3); box-shadow:0 0 0 3px rgba(124,58,237,.35),0 4px 14px rgba(124,58,237,.4); border:4px solid #7c3aed; }
-  .sel-color { margin-top:8px; display:flex; align-items:center; gap:8px; font-size:13px; color:#6b7280; }
-  .sel-dot { width:26px; height:26px; border-radius:50%; border:2px solid #e5e7eb; box-shadow:0 2px 6px rgba(0,0,0,.15); flex-shrink:0; }
+  /* ── Header ── */
+  .reuti-header {
+    background: linear-gradient(135deg, #5b21b6 0%, #9333ea 50%, #db2777 100%);
+    padding: 20px 24px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .reuti-header h1 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(22px, 6vw, 36px);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-shadow: 0 3px 16px rgba(0,0,0,.3);
+    line-height: 1.2;
+  }
+  .reuti-header p {
+    margin: 8px 0 0;
+    color: rgba(255,255,255,.85);
+    font-size: clamp(14px, 3.5vw, 17px);
+    font-weight: 400;
+    letter-spacing: 0.2px;
+  }
 
-  /* toolbar */
-  .toolbar { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:12px; }
-  .tool-badge { display:flex; align-items:center; gap:6px; background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; border-radius:999px; padding:10px 16px; box-shadow:0 4px 14px rgba(124,58,237,.38); font-weight:700; font-size:14px; }
-  .action-btn { display:flex; align-items:center; gap:6px; padding:10px 16px; border-radius:999px; border:none; font-weight:700; font-size:14px; cursor:pointer; font-family:'Fredoka','Heebo',sans-serif; transition:opacity .15s; min-height:44px; }
-  .btn-undo   { background:#f3f4f6; color:#374151; box-shadow:0 2px 8px rgba(0,0,0,.08); }
-  .btn-clear  { background:#fee2e2; color:#dc2626; box-shadow:0 2px 8px rgba(220,38,38,.12); }
-  .btn-save   { background:linear-gradient(135deg,#059669,#10b981); color:#fff; box-shadow:0 4px 14px rgba(5,150,105,.35); }
+  /* ── Body ── */
+  .reuti-body { max-width: 900px; margin: 0 auto; padding: 16px 14px 48px; }
 
-  /* canvas */
-  .canvas-wrap { position:relative; margin:0 auto; overflow:hidden; border-radius:20px; border:3px dashed #e9d5ff; background:#fff; touch-action:none; box-shadow:0 8px 40px rgba(124,58,237,.12),0 2px 8px rgba(0,0,0,.08); }
-  .canvas-wrap canvas { position:absolute; inset:0; width:100%; height:100%; }
-  .canvas-hint { text-align:center; margin-top:10px; color:#a78bfa; font-size:14px; font-weight:600; }
+  /* ── Card ── */
+  .reuti-card {
+    background: #fff;
+    border-radius: 22px;
+    padding: 16px 18px;
+    box-shadow: 0 4px 28px rgba(124,58,237,.1), 0 1px 4px rgba(0,0,0,.04);
+    margin-bottom: 16px;
+  }
+  .reuti-card h2 {
+    margin: 0 0 14px;
+    font-size: 17px;
+    font-weight: 700;
+    color: #6d28d9;
+    letter-spacing: 0.2px;
+  }
 
-  /* mobile adjustments */
+  /* ── Page strip ── */
+  .page-strip {
+    display: flex; gap: 10px; overflow-x: auto;
+    padding-bottom: 6px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #e9d5ff transparent;
+  }
+  .page-btn {
+    flex: 0 0 auto;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    border: 3px solid #f3f4f6; border-radius: 16px; padding: 8px 6px;
+    background: #fafafa; cursor: pointer;
+    scroll-snap-align: start;
+    transition: all .18s;
+  }
+  .page-btn.active {
+    border-color: #7c3aed; background: #f5f3ff;
+    box-shadow: 0 4px 18px rgba(124,58,237,.28);
+    transform: scale(1.06);
+  }
+  .page-btn img { height: 66px; width: 66px; object-fit: contain; border-radius: 10px; display: block; }
+  .page-btn span {
+    font-size: 11px; font-weight: 700; color: #9ca3af;
+    max-width: 68px; text-align: center; line-height: 1.3;
+    font-family: 'Fredoka', 'Heebo', sans-serif;
+  }
+  .page-btn.active span { color: #7c3aed; }
+
+  /* ── Palette ── */
+  .palette { display: flex; flex-wrap: wrap; gap: 9px; }
+  .color-btn {
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 3px solid #fff; cursor: pointer;
+    transition: all .14s;
+    box-shadow: 0 2px 6px rgba(0,0,0,.2);
+  }
+  .color-btn.is-white { border: 2px solid #d1d5db; }
+  .color-btn.active {
+    transform: scale(1.3);
+    box-shadow: 0 0 0 3px rgba(124,58,237,.4), 0 4px 16px rgba(124,58,237,.4);
+    border: 4px solid #7c3aed;
+  }
+  .sel-color { margin-top: 10px; display: flex; align-items: center; gap: 10px; }
+  .sel-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #e5e7eb; box-shadow: 0 2px 6px rgba(0,0,0,.15); flex-shrink: 0; }
+  .sel-label {
+    font-size: 14px; font-weight: 600; color: #6d28d9;
+    background: #f5f3ff; padding: 4px 12px; border-radius: 999px;
+  }
+
+  /* ── Toolbar ── */
+  .toolbar { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .tool-badge {
+    display: flex; align-items: center; gap: 7px;
+    background: linear-gradient(135deg, #6d28d9, #a855f7);
+    color: #fff; border-radius: 999px; padding: 11px 20px;
+    box-shadow: 0 4px 16px rgba(109,40,217,.4);
+    font-weight: 700; font-size: 15px;
+    letter-spacing: 0.3px;
+  }
+  .action-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 11px 18px; border-radius: 999px; border: none;
+    font-weight: 700; font-size: 15px; cursor: pointer;
+    font-family: 'Fredoka', 'Heebo', sans-serif;
+    letter-spacing: 0.2px;
+    transition: opacity .15s, transform .1s;
+    min-height: 46px;
+  }
+  .action-btn:active { transform: scale(.96); }
+  .btn-undo  { background: #f3f4f6; color: #374151; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+  .btn-clear { background: #fee2e2; color: #b91c1c; box-shadow: 0 2px 8px rgba(185,28,28,.12); }
+  .btn-save  { background: linear-gradient(135deg, #059669, #10b981); color: #fff; box-shadow: 0 4px 16px rgba(5,150,105,.38); }
+
+  /* ── Canvas ── */
+  .canvas-wrap {
+    position: relative; margin: 0 auto; overflow: hidden;
+    border-radius: 20px; border: 3px dashed #ddd6fe;
+    background: #fff; touch-action: none;
+    box-shadow: 0 8px 40px rgba(124,58,237,.1), 0 2px 8px rgba(0,0,0,.06);
+  }
+  .canvas-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .canvas-hint {
+    text-align: center; margin-top: 12px;
+    color: #8b5cf6; font-size: 15px; font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+
+  /* ── Mobile ── */
   @media (max-width: 480px) {
-    .reuti-header { padding:14px 16px 36px; }
-    .reuti-body { padding:10px 8px 32px; }
-    .reuti-card { padding:12px 12px; border-radius:16px; margin-bottom:10px; }
-    .color-btn { width:36px; height:36px; }
-    .color-btn.active { transform:scale(1.25); }
-    .palette { gap:6px; }
-    .action-btn { padding:9px 12px; font-size:13px; }
-    .page-btn img { height:54px; width:54px; }
-    .toolbar { gap:6px; }
+    .reuti-header { padding: 16px 16px 40px; }
+    .reuti-body { padding: 12px 10px 36px; }
+    .reuti-card { padding: 14px 14px; border-radius: 18px; margin-bottom: 12px; }
+    .reuti-card h2 { font-size: 15px; margin-bottom: 12px; }
+    .color-btn { width: 36px; height: 36px; }
+    .color-btn.active { transform: scale(1.22); }
+    .palette { gap: 7px; }
+    .action-btn { padding: 10px 14px; font-size: 13px; min-height: 44px; }
+    .tool-badge { padding: 10px 14px; font-size: 13px; }
+    .page-btn img { height: 56px; width: 56px; }
+    .toolbar { gap: 7px; }
+    .canvas-hint { font-size: 14px; }
   }
   @media (max-width: 360px) {
-    .color-btn { width:32px; height:32px; }
-    .action-btn { padding:8px 10px; font-size:12px; gap:4px; }
+    .color-btn { width: 32px; height: 32px; }
+    .action-btn { padding: 9px 12px; font-size: 12px; gap: 4px; }
+    .tool-badge { padding: 9px 12px; font-size: 12px; }
   }
 `;
 
@@ -310,7 +419,7 @@ export function ColoringReader({ pages }: { pages: ColoringPage[] }) {
           <div className="palette">
             {PALETTE.map(c => (
               <button key={c} onClick={() => setColor(c)}
-                className={`color-btn${c === color ? " active" : ""}${c === "#ffffff" ? " white" : ""}`}
+                className={`color-btn${c === color ? " active" : ""}${c === "#ffffff" ? " is-white" : ""}`}
                 style={{ background: c }}
                 title={c === "#ffffff" ? "לבן / מחיקה" : c}
               />
@@ -318,7 +427,7 @@ export function ColoringReader({ pages }: { pages: ColoringPage[] }) {
           </div>
           <div className="sel-color">
             <div className="sel-dot" style={{ background: color }} />
-            <span>{color === "#ffffff" ? "לבן (מחיקה)" : "צבע נבחר"}</span>
+            <span className="sel-label">{color === "#ffffff" ? "לבן — מחיקה" : "צבע נבחר"}</span>
           </div>
         </div>
 
