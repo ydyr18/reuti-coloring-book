@@ -240,6 +240,10 @@ export function ColoringReader({ pages }: { pages: ColoringPage[] }) {
       const w = img.width * ratio;
       const h = img.height * ratio;
       actx.drawImage(img, (CANVAS_W - w) / 2, (CANVAS_H - h) / 2, w, h);
+      // מסגרת שחורה שמונעת דלף צבע לקצוות הקנבס
+      actx.strokeStyle = "#000000";
+      actx.lineWidth = 12;
+      actx.strokeRect(6, 6, CANVAS_W - 12, CANVAS_H - 12);
       const data = actx.getImageData(0, 0, CANVAS_W, CANVAS_H).data;
       const mask = new Uint8Array(CANVAS_W * CANVAS_H);
       for (let i = 0, p = 0; i < data.length; i += 4, p++) {
